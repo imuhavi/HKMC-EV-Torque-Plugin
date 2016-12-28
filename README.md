@@ -1,2 +1,2 @@
-# SoulEV-Torque-Plugin
-A Torque Pro Plugin for the Kia Soul EV to import and update PID codes
+# HKMC-EV-Torque-Plugin
+A Torque-Pro Plugin for Hyundai and Kia EVs to import and update PID codes
