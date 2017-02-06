@@ -13,6 +13,17 @@ import android.widget.Toast;
 
 import org.prowl.torque.remote.ITorqueService;
 
+import com.opencsv.CSVReader;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+
+import java.util.List;
+
+
 public class PluginActivity extends Activity {
 
     private ITorqueService torqueService;
@@ -20,29 +31,73 @@ public class PluginActivity extends Activity {
         public void onClick(View v) {
 
             try {
-                // Manage extra PIDs/Sensors >> Add predefined set >> HKMC EV
-                // TODO: Categorize by vehicle model
-                boolean success = torqueService.sendPIDData("HKMC EV",
-                        new String[]{"XXXXX"},
-                        new String[]{"TPID"},
-                        new String[]{"2101"},
-                        new String[]{"A*100"},
-                        new float[]{0.0f},
-                        new float[]{1000.0f},
-                        new String[]{"mA"},
-                        new String[]{"Auto"});
+
+                List<String> name = new ArrayList<String>();
+                List<String> shortName = new ArrayList<String>();
+                List<String> modeAndPID = new ArrayList<String>();
+                List<String> equation = new ArrayList<String>();
+                List<Float> minValue = new ArrayList<Float>();
+                List<Float> maxValue = new ArrayList<Float>();
+                List<String> unit = new ArrayList<String>();
+                List<String> header = new ArrayList<String>();
+
+                String[] nextLine;
+                for (String filename : getAssets().list("Soul EV")) {
+                    File filesDir = getFilesDir();
+                    CSVReader reader = new CSVReader(new BufferedReader(new InputStreamReader(getAssets().open("Soul EV/" + filename), Charset.forName("UTF-8"))));
+
+                    while ((nextLine = reader.readNext()) != null) {
+                        // Manage extra PIDs/Sensors >> Add predefined set >> HKMC EV
+                        name.add(nextLine[0]);
+                        shortName.add(nextLine[1]);
+                        modeAndPID.add(nextLine[2]);
+                        equation.add(nextLine[3]);
+                        minValue.add(Float.parseFloat(nextLine[4]));
+                        maxValue.add(Float.parseFloat(nextLine[5]));
+                        unit.add(nextLine[6]);
+                        header.add(nextLine[7]);
+                    }
+                }
+
+                float[] minvalueArray = new float[minValue.size()];
+                for (int i = 0; i < minValue.size(); i++) {
+                    minvalueArray[i] = minValue.get(i).floatValue();
+                }
+                float[] maxvalueArray = new float[maxValue.size()];
+                for (int i = 0; i < maxValue.size(); i++) {
+                    maxvalueArray[i] = maxValue.get(i).floatValue();
+                }
+
+                boolean success = torqueService.sendPIDDataV2(getPackageName(),
+                        name.toArray(new String[name.size()]),
+                        shortName.toArray(new String[shortName.size()]),
+                        modeAndPID.toArray(new String[modeAndPID.size()]),
+                        equation.toArray(new String[equation.size()]),
+                        minvalueArray,
+                        maxvalueArray,
+                        unit.toArray(new String[unit.size()]),
+                        header.toArray(new String[header.size()]),
+                        null,
+                        null
+                );
 
                 if (!success) {
                     Toast.makeText(getApplicationContext(), "Fail to add PID data", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(getApplicationContext(), "Successfully added PID data", Toast.LENGTH_SHORT).show();
+                }
+                else
+                {
+                    Toast.makeText(getApplicationContext(), "Finish", Toast.LENGTH_SHORT).show();
                 }
 
-            } catch (RemoteException ex) {
+            }
+            catch (Exception ex)
+            {
                 Toast.makeText(getApplicationContext(), ex.toString(), Toast.LENGTH_SHORT).show();
             }
         }
     };
+
+
     /**
      * Bits of service code. You usually won't need to change this.
      */
