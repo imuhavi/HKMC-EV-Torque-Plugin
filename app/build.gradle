@@ -1,8 +1,8 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion "25.0.2"
+    compileSdkVersion 'Google Inc.:Google APIs:23'
+    buildToolsVersion '25.0.2'
     defaultConfig {
         applicationId "jejusoul.com.github.obd_pids_for_hkmc_evs"
         minSdkVersion 15
@@ -19,6 +19,13 @@ android {
     }
     productFlavors {
     }
+    dexOptions {
+        incremental true
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
+    }
 }
 
 dependencies {
@@ -26,7 +33,7 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile 'com.android.support:appcompat-v7:25.1.0'
+    compile 'com.android.support:appcompat-v7:23.0.0'
     testCompile 'junit:junit:4.12'
-    compile files('E:/Work/HKMC-EV-Torque-Plugin/libs/opencsv-3.9.jar')
+    compile files('C:/Users/com/Documents/GitHub/HKMC-EV-Torque-Plugin/libs/opencsv-3.9.jar')
 }
