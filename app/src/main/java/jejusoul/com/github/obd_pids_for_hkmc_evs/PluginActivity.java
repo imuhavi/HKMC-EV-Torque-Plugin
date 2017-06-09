@@ -4,7 +4,10 @@ import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.AsyncTask;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.RemoteException;
 import android.os.Bundle;
 import android.view.View;
@@ -17,27 +20,69 @@ import com.opencsv.CSVReader;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 
 import java.util.List;
 
 
+
+
+
 public class PluginActivity extends Activity {
 
     private ITorqueService torqueService;
 
+    private class DownloadFilesTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            try {
+                URL url = new URL("https://github.com/JejuSoul/OBD-PIDs-for-HKMC-EVs/archive/master.zip");
+                HttpURLConnection conn = (HttpURLConnection)url.openConnection();
+
+                int len = 1024*1024; // Buffer Size
+                byte[] tmpByte = new byte[len];
+
+                InputStream is = conn.getInputStream();
+
+                String filepath = getExternalFilesDir(null).toString() + "/master.zip";
+                File file = new File(filepath);
+                FileOutputStream fos = new FileOutputStream(file);
+
+                while(true)
+                {
+                    int read = is.read(tmpByte);
+                    if(read<=0)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        fos.write(tmpByte, 0, read);
+                    }
+                }
+
+                is.close();
+                fos.close();
+                conn.disconnect();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            return null;
+        }
+    }
+
     private View.OnClickListener updateClickListener = new View.OnClickListener() {
         public void onClick(View v) {
-            try {
-                // Repository 가 존재하지 않으면 Clone
-                // 아니면 Update
-
-            } catch (Exception e) {
-
-            }
+            new DownloadFilesTask().execute(null, null, null);
         }
     };
 
